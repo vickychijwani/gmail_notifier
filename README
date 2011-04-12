@@ -7,7 +7,7 @@ Open the script 'gmail_checker' in a text editor. Enter your Gmail username and 
 To-do
 -----
 1. Currently, to check for new unread email, the script checks if the count of unread email has increased. This is not necessarily true (e.g. if the user reads an unread email and another new email arrives in the time between two checks).
-2. Provide configuration options (time between 2 consecutive checks, expiry time of notifications, what things to display in the notification, etc).
+2. Provide GUI for configuration options.
 3. Currently the username and password are hard-coded into the script. This vulnerability should be eliminated either by storing the password in encrypted form or storing it as plain text under the control of another password (say, the user's login password).
 4. Integrate with the Ubuntu messaging menu or make a separate indicator applet.
 5. Add support for other email clients (Yahoo!, Hotmail, etc).

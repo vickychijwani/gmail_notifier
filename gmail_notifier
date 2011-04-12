@@ -2,10 +2,18 @@
 # Author: Vicky Chijwani
 # Purpose: To notify the user of new email (works even if you're behind an HTTP proxy)
 
-cd ~/.scripts/Email\ Checker
+# ------------------------------------------------------------------------------------
+# USER CONFIGURATION OPTIONS ---------------------------------------------------------
+# ------------------------------------------------------------------------------------
+EMAIL_USERNAME='vickychijwani'				# Gmail username
+EMAIL_PASSWORD='22090311252341992'		# Gmail password
+NOTIFICATION_EXPIRE_TIME=4						# Time (in seconds) for which notifications persist
+DELAY_BETWEEN_CHECKS=5								# Time (in seconds) between checks
 
-EMAIL_USERNAME='vickychijwani'
-EMAIL_PASSWORD='22090311252341992'
+# ------------------------------------------------------------------------------------
+# CODE (Do not change anything below this line) --------------------------------------
+# ------------------------------------------------------------------------------------
+cd ~/.scripts/Email\ Checker
 
 # remove any existing files
 if [ -f mail.unread ]; then rm mail.unread; fi
@@ -49,7 +57,7 @@ notify_email() {
 
 notify() {
 	echo "$1" "$2"
-	notify-send --urgency=critical --expire-time 4000 --icon "$(echo gmail)" "$1" "$2"
+	notify-send --urgency=critical --expire-time `echo $NOTIFICATION_EXPIRE_TIME*1000|bc` --icon "$(echo gmail)" "$1" "$2"
 }
 
 check_for_email() {
@@ -86,5 +94,5 @@ check_for_email() {
 # run indefinitely in the background
 while [ 1 -eq 1 ]; do
 	check_for_email
-	sleep 5
+	sleep $DELAY_BETWEEN_CHECKS
 done

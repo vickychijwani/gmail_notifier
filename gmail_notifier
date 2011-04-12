@@ -1,0 +1,90 @@
+#! /bin/bash
+# Author: Vicky Chijwani
+# Purpose: To notify the user of new email (works even if you're behind an HTTP proxy)
+
+cd ~/.scripts/Email\ Checker
+
+EMAIL_USERNAME='vickychijwani'
+EMAIL_PASSWORD='22090311252341992'
+
+# remove any existing files
+if [ -f mail.unread ]; then rm mail.unread; fi
+if [ -f mail.unread.old ]; then	rm mail.unread.old; fi
+if [ -f mail.error ]; then rm mail.error; fi
+
+# fetch unread mail from Gmail's unread mail RSS feed and store it in mail.unread
+get_unread_mail() {
+	output=$(curl --connect-timeout 5 -u $EMAIL_USERNAME:$EMAIL_PASSWORD "https://mail.google.com/mail/feed/atom")
+	
+	# if an error has occurred, record that by creating the file mail.error and notify the user of the error ...
+	if [ ! "$output" ]; then
+		if [ ! -f mail.error ]; then
+			notify "Network / Authentication error"
+			touch mail.error
+			return 1;
+		fi
+	# ... otherwise, if mail.error exists, delete it, and save the contents of $output in mail.unread
+	else
+		if [ -f mail.error ]; then rm mail.error; fi
+		echo "$output" > mail.unread
+		while [ ! -f mail.unread ]; do sleep 1; done
+		return 0;
+	fi
+}
+
+# get the count of unread mail from the specified file
+get_unread_mail_count() {
+	
+}
+
+notify_email() {
+	local notification_title="You have $1 unread emails"
+	local notification_content=""
+	for (( i=1 ; i<=$(xpath -q -e "count(//entry)" mail.unread 2>&1|sed 's/^.*Value: //'); i=$i+1 )); do
+		if [ $i -ne 1 ]; then notification_content="$notification_content\n"; fi
+		notification_content="$notification_content$(echo `xpath -q -e "(//entry/title)[$i]/text()" mail.unread`; echo -n "\t- "; echo `xpath -q -e "(//entry/author/name)[$i]/text()" mail.unread`)"
+	done
+	notify "$notification_title" "$notification_content"
+}
+
+notify() {
+	echo "$1" "$2"
+	notify-send --urgency=critical --expire-time 4000 --icon "$(echo gmail)" "$1" "$2"
+}
+
+check_for_email() {
+	# if 'mail.unread' already exists, copy its contents into 'mail.unread.old' and store the new unread mail in 'mail.unread' ...(1)
+	if [ -f mail.unread ]; then
+	
+		# copy the contents of mail.unread into mail.unread.old
+		cp mail.unread mail.unread.old
+		
+		# get the current unread mail
+		get_unread_mail
+		if [ ! -f mail.error ]; then
+			old_unread=$(xpath -q -e "//fullcount/text()" mail.unread.old)
+			new_unread=$(xpath -q -e "//fullcount/text()" mail.unread)
+			
+			# notify the user if the number of unread mails has increased
+			if [ "$new_unread" -gt "$old_unread" ]; then
+				notify_email $new_unread
+			fi
+		fi
+	
+	# (1)... else just store the unread mail in 'mail.unread' and notify the user directly
+	else
+		
+		get_unread_mail
+		if [ ! -f mail.error ]; then
+			unread=$(xpath -q -e "//fullcount/text()" mail.unread)
+			notify_email $unread
+		fi
+	
+	fi
+}
+
+# run indefinitely in the background
+while [ 1 -eq 1 ]; do
+	check_for_email
+	sleep 5
+done

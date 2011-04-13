@@ -5,15 +5,16 @@
 # ------------------------------------------------------------------------------------
 # USER CONFIGURATION OPTIONS ---------------------------------------------------------
 # ------------------------------------------------------------------------------------
-EMAIL_USERNAME='vickychijwani'				# Gmail username
-EMAIL_PASSWORD='22090311252341992'		# Gmail password
+EMAIL_USERNAME='YOUR_USERNAME'				# Gmail username
+EMAIL_PASSWORD='YOUR_PASSWORD'				# Gmail password
 NOTIFICATION_EXPIRE_TIME=4						# Time (in seconds) for which notifications persist
 DELAY_BETWEEN_CHECKS=5								# Time (in seconds) between checks
 
 # ------------------------------------------------------------------------------------
 # CODE (Do not change anything below this line) --------------------------------------
 # ------------------------------------------------------------------------------------
-cd ~/.scripts/Email\ Checker
+cd ~/.gmail_notifier
+python messaging_menu.py &
 
 # remove any existing files
 if [ -f mail.unread ]; then rm mail.unread; fi
@@ -22,35 +23,36 @@ if [ -f mail.error ]; then rm mail.error; fi
 
 # fetch unread mail from Gmail's unread mail RSS feed and store it in mail.unread
 get_unread_mail() {
-	output=$(curl --connect-timeout 5 -u $EMAIL_USERNAME:$EMAIL_PASSWORD "https://mail.google.com/mail/feed/atom")
+	output=$(curl --connect-timeout 5 -s -u $EMAIL_USERNAME:$EMAIL_PASSWORD "https://mail.google.com/mail/feed/atom")
 	
 	# if an error has occurred, record that by creating the file mail.error and notify the user of the error ...
 	if [ ! "$output" ]; then
-		if [ ! -f mail.error ]; then
-			notify "Network / Authentication error"
-			touch mail.error
-			return 1;
+		if [ ! -f mail.error ] || [ `cat mail.error` == "1" ]; then
+			echo "here"
+			notify "Network error"
+			echo "0">mail.error				# 0 denotes a network error
 		fi
 	# ... otherwise, if mail.error exists, delete it, and save the contents of $output in mail.unread
 	else
-		if [ -f mail.error ]; then rm mail.error; fi
-		echo "$output" > mail.unread
-		while [ ! -f mail.unread ]; do sleep 1; done
-		return 0;
+		if [ $(echo "$output"|xpath -q -e "//fullcount/text()") ]; then
+			if [ -f mail.error ]; then rm mail.error; fi
+			echo "$output" > mail.unread
+			while [ ! -f mail.unread ]; do sleep 1; done
+		else
+			if [ ! -f mail.error ] || [ `cat mail.error` == "0" ]; then
+				notify "Authentication error"
+				echo "1">mail.error			# 1 denotes an authentication error
+			fi
+		fi
 	fi
 }
 
-# get the count of unread mail from the specified file
-get_unread_mail_count() {
-	
-}
-
 notify_email() {
-	local notification_title="You have $1 unread emails"
+	local notification_title="You have $1 unread email(s)"
 	local notification_content=""
 	for (( i=1 ; i<=$(xpath -q -e "count(//entry)" mail.unread 2>&1|sed 's/^.*Value: //'); i=$i+1 )); do
 		if [ $i -ne 1 ]; then notification_content="$notification_content\n"; fi
-		notification_content="$notification_content$(echo `xpath -q -e "(//entry/title)[$i]/text()" mail.unread`; echo -n "\t- "; echo `xpath -q -e "(//entry/author/name)[$i]/text()" mail.unread`)"
+		notification_content="$notification_content$(echo `xpath -q -e "(//entry/title)[$i]/text()" mail.unread|cut -c1-40`; echo -n "\t- "; echo `xpath -q -e "(//entry/author/name)[$i]/text()" mail.unread`)"
 	done
 	notify "$notification_title" "$notification_content"
 }

@@ -10,6 +10,8 @@ EMAIL_PASSWORD='YOUR_PASSWORD'				# Gmail password
 NOTIFICATION_EXPIRE_TIME=4						# Time (in seconds) for which notifications persist
 DELAY_BETWEEN_CHECKS=5								# Time (in seconds) between checks
 
+
+
 # ------------------------------------------------------------------------------------
 # CODE (Do not change anything below this line) --------------------------------------
 # ------------------------------------------------------------------------------------
@@ -23,8 +25,13 @@ if [ -f mail.error ]; then rm mail.error; fi
 
 # fetch unread mail from Gmail's unread mail RSS feed and store it in mail.unread
 get_unread_mail() {
-	output=$(curl --connect-timeout 5 -s -u $EMAIL_USERNAME:$EMAIL_PASSWORD "https://mail.google.com/mail/feed/atom")
-	
+	if [ ${#http_proxy} -gt 0]; then
+		# if proxy variable is set, use curl accordingly
+		output=$(curl --connect-timeout 5 -s -u $EMAIL_USERNAME:$EMAIL_PASSWORD "https://mail.google.com/mail/feed/atom" --proxy $http_proxy)
+	else
+		output=$(curl --connect-timeout 5 -s -u $EMAIL_USERNAME:$EMAIL_PASSWORD "https://mail.google.com/mail/feed/atom")
+	fi
+
 	# if an error has occurred, record that by creating the file mail.error and notify the user of the error ...
 	if [ ! "$output" ]; then
 		if [ ! -f mail.error ] || [ `cat mail.error` == "1" ]; then

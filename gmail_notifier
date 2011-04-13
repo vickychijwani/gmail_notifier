@@ -2,19 +2,20 @@
 # Author: Vicky Chijwani
 # Purpose: To notify the user of new email (works even if you're behind an HTTP proxy)
 
-# ------------------------------------------------------------------------------------
-# USER CONFIGURATION OPTIONS ---------------------------------------------------------
-# ------------------------------------------------------------------------------------
-EMAIL_USERNAME='YOUR_USERNAME'				# Gmail username
-EMAIL_PASSWORD='YOUR_PASSWORD'				# Gmail password
-NOTIFICATION_EXPIRE_TIME=4						# Time (in seconds) for which notifications persist
-DELAY_BETWEEN_CHECKS=5								# Time (in seconds) between checks
+# -----------------------------------------------------------------------------------------------
+# USER CONFIGURATION OPTIONS --------------------------------------------------------------------
+# -----------------------------------------------------------------------------------------------
+EMAIL_USERNAME='YOUR_USERNAME'               # Gmail username (within single quotes)
+EMAIL_PASSWORD='YOUR_PASSWORD'               # Gmail password (within single quotes)
+NOTIFICATION_EXPIRE_TIME=4                   # Time (in seconds) for which notifications persist
+DELAY_BETWEEN_CHECKS=10                      # Time (in seconds) between checks (recommended>=10)
+CONNECTION_TIMEOUT=$DELAY_BETWEEN_CHECKS-1   # Time (in seconds) before a connection times out
+                                             # Recommended value is "$DELAY_BETWEEN_CHECKS-1"
 
 
-
-# ------------------------------------------------------------------------------------
-# CODE (Do not change anything below this line) --------------------------------------
-# ------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------
+# CODE (Do not change anything below this line) --------------------------------------------------
+# ------------------------------------------------------------------------------------------------
 cd ~/.gmail_notifier
 python messaging_menu.py &
 
@@ -27,9 +28,9 @@ if [ -f mail.error ]; then rm mail.error; fi
 get_unread_mail() {
 	if [ ${#http_proxy} -gt 0]; then
 		# if proxy variable is set, use curl accordingly
-		output=$(curl --connect-timeout 5 -s -u $EMAIL_USERNAME:$EMAIL_PASSWORD "https://mail.google.com/mail/feed/atom" --proxy $http_proxy)
+		output=$(curl --connect-timeout $CONNECTION_TIMEOUT -s -u $EMAIL_USERNAME:$EMAIL_PASSWORD "https://mail.google.com/mail/feed/atom" --proxy $http_proxy)
 	else
-		output=$(curl --connect-timeout 5 -s -u $EMAIL_USERNAME:$EMAIL_PASSWORD "https://mail.google.com/mail/feed/atom")
+		output=$(curl --connect-timeout $CONNECTION_TIMEOUT -s -u $EMAIL_USERNAME:$EMAIL_PASSWORD "https://mail.google.com/mail/feed/atom")
 	fi
 
 	# if an error has occurred, record that by creating the file mail.error and notify the user of the error ...

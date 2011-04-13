@@ -28,14 +28,16 @@ get_unread_mail() {
 	# if an error has occurred, record that by creating the file mail.error and notify the user of the error ...
 	if [ ! "$output" ]; then
 		if [ ! -f mail.error ] || [ `cat mail.error` == "1" ]; then
-			echo "here"
 			notify "Network error"
 			echo "0">mail.error				# 0 denotes a network error
 		fi
 	# ... otherwise, if mail.error exists, delete it, and save the contents of $output in mail.unread
 	else
 		if [ $(echo "$output"|xpath -q -e "//fullcount/text()") ]; then
-			if [ -f mail.error ]; then rm mail.error; fi
+			if [ -f mail.error ]; then
+				notify "Connection established"
+				rm mail.error
+			fi
 			echo "$output" > mail.unread
 			while [ ! -f mail.unread ]; do sleep 1; done
 		else

@@ -26,7 +26,7 @@ if [ -f mail.error ]; then rm mail.error; fi
 
 # fetch unread mail from Gmail's unread mail RSS feed and store it in mail.unread
 get_unread_mail() {
-	if [ ${#http_proxy} -gt 0]; then
+	if [ ${#http_proxy} -gt 0 ]; then
 		# if proxy variable is set, use curl accordingly
 		output=$(curl --connect-timeout $CONNECTION_TIMEOUT -s -u $EMAIL_USERNAME:$EMAIL_PASSWORD "https://mail.google.com/mail/feed/atom" --proxy $http_proxy)
 	else
@@ -69,7 +69,7 @@ notify_email() {
 
 notify() {
 	echo "$1" "$2"
-	notify-send --urgency=critical --expire-time `echo $NOTIFICATION_EXPIRE_TIME*1000|bc` --icon "$(echo gmail)" "$1" "$2"
+	notify-send --urgency=critical --expire-time `echo $NOTIFICATION_EXPIRE_TIME*1000|bc` --icon "$(echo email)" "$1" "$2"
 }
 
 check_for_email() {

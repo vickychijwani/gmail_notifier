@@ -8,7 +8,7 @@
 EMAIL_USERNAME='YOUR_USERNAME'               # Gmail username (within single quotes)
 EMAIL_PASSWORD='YOUR_PASSWORD'               # Gmail password (within single quotes)
 NOTIFICATION_EXPIRE_TIME=4                   # Time (in seconds) for which notifications persist
-DELAY_BETWEEN_CHECKS=10                      # Time (in seconds) between checks (recommended>=10)
+DELAY_BETWEEN_CHECKS=30                      # Time (in seconds) between checks (recommended>=30)
 CONNECTION_TIMEOUT=$DELAY_BETWEEN_CHECKS-1   # Time (in seconds) before a connection times out
                                              # Recommended value is "$DELAY_BETWEEN_CHECKS-1"
 

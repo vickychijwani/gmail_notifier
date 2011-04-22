@@ -5,6 +5,7 @@ install:
 	sudo apt-get install python-indicate
 	cd feedparser/; python setup.py install; cd -
 	cp messaging_menu.py ~/.gmail_notifier/
+	cp -r sounds/ ~/.gmail_notifier/
 	cp gmail_notifier /usr/bin/
 	cp gmail_notifier.desktop /usr/share/applications/
 

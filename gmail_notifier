@@ -14,6 +14,9 @@ CONNECTION_TIMEOUT=$DELAY_BETWEEN_CHECKS-1   # Time (in seconds) before a connec
 NETWORK_ERROR_NOTIFICATIONS='OFF'            # Should error notifications be displayed?
                                              # Recommended is "ON" for fast connections and
                                              # "OFF" for slow connections.
+AUDIO_NOTIFICATIONS='OFF'                    # Should audio notifications be played for new mail?
+                                             # (default is 'OFF', change it to 'ON' to enable)
+AUDIO_NOTIFICATIONS_SOUND='message.wav'      # Any *.wav file placed in the "sounds/" folder
 
 # ------------------------------------------------------------------------------------------------
 # CODE (Do not change anything below this line) --------------------------------------------------
@@ -64,6 +67,7 @@ get_unread_mail() {
 }
 
 notify_email() {
+	# visual notification
 	local notification_title="You have $1 unread email(s)"
 	local notification_content=""
 	for (( i=1 ; i<=$(xpath -q -e "count(//entry)" mail.unread 2>&1|sed 's/^.*Value: //'); i=$i+1 )); do
@@ -71,6 +75,11 @@ notify_email() {
 		notification_content="$notification_content$(echo `xpath -q -e "(//entry/title)[$i]/text()" mail.unread|cut -c1-40`; echo -n "\t- "; echo `xpath -q -e "(//entry/author/name)[$i]/text()" mail.unread`)"
 	done
 	notify "$notification_title" "$notification_content"
+	
+	# audio notification
+	if [ `echo $AUDIO_NOTIFICATIONS` == "ON" ]; then
+		paplay "$HOME/.gmail_notifier/sounds/$AUDIO_NOTIFICATIONS_SOUND"
+	fi
 }
 
 notify() {

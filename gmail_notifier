@@ -11,7 +11,9 @@ NOTIFICATION_EXPIRE_TIME=4                   # Time (in seconds) for which notif
 DELAY_BETWEEN_CHECKS=30                      # Time (in seconds) between checks (recommended>=30)
 CONNECTION_TIMEOUT=$DELAY_BETWEEN_CHECKS-1   # Time (in seconds) before a connection times out
                                              # Recommended value is "$DELAY_BETWEEN_CHECKS-1"
-
+NETWORK_ERROR_NOTIFICATIONS='OFF'            # Should error notifications be displayed?
+                                             # Recommended is "ON" for fast connections and
+                                             # "OFF" for slow connections.
 
 # ------------------------------------------------------------------------------------------------
 # CODE (Do not change anything below this line) --------------------------------------------------
@@ -36,14 +38,18 @@ get_unread_mail() {
 	# if an error has occurred, record that by creating the file mail.error and notify the user of the error ...
 	if [ ! "$output" ]; then
 		if [ ! -f mail.error ] || [ `cat mail.error` == "1" ]; then
-			notify "Network error"
+                	if [ `echo $NETWORK_ERROR_NOTIFICATIONS` == "ON" ]; then
+				notify "Network error"
+			fi
 			echo "0">mail.error				# 0 denotes a network error
 		fi
 	# ... otherwise, if mail.error exists, delete it, and save the contents of $output in mail.unread
 	else
 		if [ $(echo "$output"|xpath -q -e "//fullcount/text()") ]; then
 			if [ -f mail.error ]; then
-				notify "Connection established"
+				if [ `echo $NETWORK_ERROR_NOTIFICATIONS` == "ON" ]; then
+					notify "Connection established"
+				fi
 				rm mail.error
 			fi
 			echo "$output" > mail.unread
@@ -69,7 +75,7 @@ notify_email() {
 
 notify() {
 	echo "$1" "$2"
-	notify-send --urgency=critical --expire-time `echo $NOTIFICATION_EXPIRE_TIME*1000|bc` --icon "$(echo email)" "$1" "$2"
+	notify-send --urgency=critical --expire-time `echo $NOTIFICATION_EXPIRE_TIME*1000|bc` --icon "$(echo mail-unread)" "$1" "$2"
 }
 
 check_for_email() {

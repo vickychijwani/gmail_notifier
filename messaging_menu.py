@@ -15,10 +15,16 @@ def serverClick(*args):
   
   os.popen("$(update-alternatives --display x-www-browser|sed 2p -n|sed 's/^.*link currently points to //') http://mail.google.com/")
 
-# handler for clicks on an indicator of Gmail Notifier
-def labelClick(*args):
+# handler for clicks on the inbox indicator
+def inboxHandler(*args):
   
   os.popen("$(update-alternatives --display x-www-browser|sed 2p -n|sed 's/^.*link currently points to //') http://mail.google.com/")
+
+# handler for clicks on the quit indicator
+def quitHandler(*args):
+  
+  os.popen("pgrep -l gmail_notifier | cut -d' ' -f1 | xargs kill")
+  os.popen("pgrep -lf 'python messaging_menu.py' | cut -d' ' -f1 | xargs kill")
 
 # function to set the inbox status, and also draw attention if the unread mail count has increased
 def setInboxStatus(new_status):
@@ -66,7 +72,7 @@ def pollUnreadMail():
       	setInboxStatus("Error")
 
 # function to add an indicator to the Gmail Notifier server in the messaging menu. ("Inbox" is one such indicator)
-def addIndicator(indicator_name):
+def addIndicator(indicator_name, handler):
   """
   Add a new indicator to the application's messaging menu entry.
   
@@ -77,7 +83,7 @@ def addIndicator(indicator_name):
   indicator.set_property("count", "")
   
   indicator.label = indicator_name
-  indicator.connect("user-display", labelClick)
+  indicator.connect("user-display", handler)
   
   indicators[indicator_name] = indicator
   indicators[indicator_name].show()
@@ -89,7 +95,9 @@ def main():
   server.set_desktop_file("/usr/share/applications/gmail_notifier.desktop")
   server.connect("server-display", serverClick)
   
-  addIndicator("Inbox")
+  addIndicator("Quit", quitHandler)
+  
+  addIndicator("Inbox", inboxHandler)
   setInboxStatus("Connecting...")
   
   lc = LoopingCall(pollUnreadMail)

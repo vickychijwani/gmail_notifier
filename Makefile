@@ -2,7 +2,7 @@ configure:
 	mkdir ~/.gmail_notifier/
 
 install:
-	sudo apt-get install python-indicate
+	sudo apt-get install curl python-indicate
 	cd feedparser/; python setup.py install; cd -
 	cp messaging_menu.py ~/.gmail_notifier/
 	cp -r sounds/ ~/.gmail_notifier/

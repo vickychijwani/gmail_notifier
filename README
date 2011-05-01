@@ -16,8 +16,9 @@ Installation
 ------------
 Dependencies
 ------------
-python-indicate (installed by default in Ubuntu 10.10 Maverick Meerkat; I'm not sure about other versions of Ubuntu.)
-feedparser (available at http://code.google.com/p/feedparser/)
+ - curl
+ - python-indicate (installed by default in Ubuntu 10.10 Maverick Meerkat; I'm not sure about other versions of Ubuntu.)
+ - feedparser (available at http://code.google.com/p/feedparser/)
 
 -------------------
 Supported Platforms

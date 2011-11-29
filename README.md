@@ -9,7 +9,7 @@ Installation
 1. Open the script 'gmail_notifier' in a text editor. Enter your Gmail username and password at the top of the script in the 'User Configuration Options' section. Also configure other options to your liking (all options are documented in the script itself). Save and exit.
 2. Run the following commands (this will also install all dependencies automatically):
 ```
-    → make configure
+    → make configure\n
     → sudo make install
 ```
 3. To uninstall, run:

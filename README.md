@@ -10,13 +10,13 @@ Installation
 2. Run the following commands (this will also install all dependencies automatically):
 
 ```sh
-→ make configure
-→ sudo make install
+$ make configure
+$ sudo make install
 ```
 3. To uninstall, run:
 
 ```sh
-→ sudo make uninstall
+$ sudo make uninstall
 ```
 
 

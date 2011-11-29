@@ -7,16 +7,15 @@
 # -----------------------------------------------------------------------------------------------
 EMAIL_USERNAME='YOUR_USERNAME'               # Gmail username (within single quotes)
 EMAIL_PASSWORD='YOUR_PASSWORD'               # Gmail password (within single quotes)
+DISPLAY_EMAIL_CONTENTS='ON'                  # Whether to display email contents too, or only
+                                             # unread email count
 NOTIFICATION_EXPIRE_TIME=4                   # Time (in seconds) for which notifications persist
 DELAY_BETWEEN_CHECKS=30                      # Time (in seconds) between checks (recommended>=30)
-CONNECTION_TIMEOUT=$DELAY_BETWEEN_CHECKS-1   # Time (in seconds) before a connection times out
+CONNECTION_TIMEOUT=$DELAY_BETWEEN_CHECKS     # Time (in seconds) before a connection times out
                                              # Recommended value is "$DELAY_BETWEEN_CHECKS-1"
 NETWORK_ERROR_NOTIFICATIONS='OFF'            # Should error notifications be displayed?
                                              # Recommended is "ON" for fast connections and
                                              # "OFF" for slow connections.
-AUDIO_NOTIFICATIONS='OFF'                    # Should audio notifications be played for new mail?
-                                             # (default is 'OFF', change it to 'ON' to enable)
-AUDIO_NOTIFICATIONS_SOUND='message.wav'      # Any *.wav file placed in the "sounds/" folder
 
 # ------------------------------------------------------------------------------------------------
 # CODE (Do not change anything below this line) --------------------------------------------------
@@ -67,19 +66,15 @@ get_unread_mail() {
 }
 
 notify_email() {
-	# visual notification
 	local notification_title="You have $1 unread email(s)"
-	local notification_content=""
-	for (( i=1 ; i<=$(xpath -q -e "count(//entry)" mail.unread 2>&1|sed 's/^.*Value: //'); i=$i+1 )); do
+        local notification_content=""
+        if [ `echo $DISPLAY_EMAIL_CONTENTS` == "ON" ]; then
+	    for (( i=1 ; i<=$(xpath -q -e "count(//entry)" mail.unread 2>&1|sed 's/^.*Value: //'); i=$i+1 )); do
 		if [ $i -ne 1 ]; then notification_content="$notification_content\n"; fi
 		notification_content="$notification_content$(echo `xpath -q -e "(//entry/title)[$i]/text()" mail.unread|cut -c1-40`; echo -n "\t- "; echo `xpath -q -e "(//entry/author/name)[$i]/text()" mail.unread`)"
-	done
+	    done
+        fi
 	notify "$notification_title" "$notification_content"
-	
-	# audio notification
-	if [ `echo $AUDIO_NOTIFICATIONS` == "ON" ]; then
-		paplay "$HOME/.gmail_notifier/sounds/$AUDIO_NOTIFICATIONS_SOUND"
-	fi
 }
 
 notify() {
@@ -90,31 +85,31 @@ notify() {
 check_for_email() {
 	# if 'mail.unread' already exists, copy its contents into 'mail.unread.old' and store the new unread mail in 'mail.unread' ...(1)
 	if [ -f mail.unread ]; then
-	
+
 		# copy the contents of mail.unread into mail.unread.old
 		cp mail.unread mail.unread.old
-		
+
 		# get the current unread mail
 		get_unread_mail
 		if [ ! -f mail.error ]; then
 			old_unread=$(xpath -q -e "//fullcount/text()" mail.unread.old)
 			new_unread=$(xpath -q -e "//fullcount/text()" mail.unread)
-			
+
 			# notify the user if the number of unread mails has increased
 			if [ "$new_unread" -gt "$old_unread" ]; then
 				notify_email $new_unread
 			fi
 		fi
-	
+
 	# (1)... else just store the unread mail in 'mail.unread' and notify the user directly
 	else
-		
+
 		get_unread_mail
 		if [ ! -f mail.error ]; then
 			unread=$(xpath -q -e "//fullcount/text()" mail.unread)
 			notify_email $unread
 		fi
-	
+
 	fi
 }
 
